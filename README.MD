@@ -11,7 +11,25 @@ Questa libreria fornisce un modo semplice ed efficiente per caricare e gestire l
 
 ## Installazione
 
-Puoi installare la libreria via pip utilizzando il seguente comando:
+E' necessario installare il codice sorgente disponibile su GitHub, puoi seguire questi passaggi:
+
+Scarica il codice sorgente dal repository GitHub qui.
+
+Estrai l'archivio scaricato nella posizione desiderata sul tuo computer.
+
+Naviga nella directory estratta nel tuo terminale:
+
+```bash
+cd PERCORSO_ALLA_DIRECTORY_ESTRAZIONE
+```
+
+Installa la libreria usando il seguente comando:
+
+```bash
+python setup.py install
+```
+
+Dopo aver eseguito il comando di installazione, la libreria verrà installata nel tuo ambiente Python.
 
 ```bash
 pip install PyWoods_Config
