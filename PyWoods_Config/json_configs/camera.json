@@ -1,0 +1,23 @@
+{
+  "index": 0,
+  "hflip": 0,
+  "vflip": 0,
+  "sensitivity": 0,
+  "tuning.enabled": "True",
+  "timestamp.format": "",
+  "tuning.path": "None",
+  "multimedia.path": "path/to/file.txt",
+  "timestamp.enabled": "True",
+  "timestamp.color": [0, 0, 0],
+  "timestamp.origin": [0, 0],
+  "timestamp.font": "",
+  "image.prefix": "",
+  "image.fmt": "",
+  "image.size": "",
+  "image.snapshots": 0,
+  "image.snapshots.t": 0,
+  "timestamp.fscale": 0,
+  "timestamp.thickness": 0  
+}
+
+  
