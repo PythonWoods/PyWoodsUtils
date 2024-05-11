@@ -3,11 +3,11 @@
 
 # PyWoods_Config
 
-PyWoods_Config è una libreria Python per la gestione delle configurazioni per modelli di intelligenza artificiale.
+PyWoods_Config è una libreria Python per la gestione delle configurazioni delle applicazioni.
 
 ## Introduzione
 
-Questa libreria fornisce un modo semplice ed efficiente per caricare e gestire le configurazioni per i modelli AI. Supporta la definizione di configurazioni tramite file JSON e fornisce una struttura Pydantic per rappresentare e validare queste configurazioni.
+Questa libreria fornisce un modo semplice ed efficiente per caricare e gestire le configurazioni  Supporta la definizione di configurazioni tramite file JSON e fornisce una struttura Pydantic per rappresentare e validare queste configurazioni.
 
 ## Installazione
 
@@ -28,10 +28,10 @@ from PyWoods_Config import ConfigManager
 config = ConfigManager.load_configs()
 
 # Accedi alla configurazione della fotocamera
-camera_config = config.CameraConfig
+xxx_config = config.xxx
 
-# Stampare l'indice della fotocamera
-print("Indice della fotocamera:", camera_config.index)
+# Stampare una proprietà relativa alla configurazione xxx
+print("prop:", xxx.prop)
 ```
 
 ## Struttura del Progetto
@@ -57,10 +57,6 @@ La struttura del progetto è organizzata nel seguente modo:
 ## Contribuire
 
 Le pull request sono le benvenute! Per le modifiche importanti, aprire prima un ticket per discutere delle modifiche proposte.
-
-## Licenza
-
-Questo progetto è distribuito sotto la licenza MIT. Vedere il file [LICENSE](LICENSE) per ulteriori informazioni.
 
 ---
 
