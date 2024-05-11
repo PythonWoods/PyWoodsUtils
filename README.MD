@@ -27,11 +27,11 @@ from PyWoods_Config import ConfigManager
 # Carica le configurazioni
 config = ConfigManager.load_configs()
 
-# Accedi alla configurazione della fotocamera
-xxx_config = config.xxx
+# Accedi ad un'area di configurazione
+area_x = config.area_x
 
-# Stampare una proprietà relativa alla configurazione xxx
-print("prop:", xxx.prop)
+# Stampare una proprietà relativa all'area di configurazione x
+print("prop:", area_x.prop)
 ```
 
 ## Struttura del Progetto
