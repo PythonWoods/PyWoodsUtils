@@ -1,78 +1,131 @@
-# PyWoods_Config
+## PyWoodsUtils: Gestione File, Configurazioni e Utilità per VisionPiWoods (Versione Alpha)
 
-PyWoods_Config è una libreria Python per la gestione delle configurazioni per varie applicazioni.
+**PyWoodsUtils** è una suite di librerie Python progettata per semplificare e ottimizzare lo sviluppo di applicazioni, fornendo funzionalità robuste per la gestione di file, configurazioni e attività comuni. Nasce con l'obiettivo di supportare lo sviluppo del progetto **VisionPiWoods**, un sistema completo per la gestione di una fotocamera Raspberry Pi utilizzando la libreria Picamera2.
 
-## Introduzione
+### Introduzione
 
-Questa libreria fornisce un modo semplice ed efficiente per caricare e gestire le configurazioni per le tue applicazioni. Supporta la definizione di configurazioni tramite file JSON e fornisce una struttura Pydantic per rappresentare e validare queste configurazioni.
+PyWoodsUtils nasce dall'esigenza di semplificare e standardizzare la gestione di file, configurazioni e altre attività comuni all'interno di progetti Python, offrendo un'interfaccia intuitiva e robusta per creare, leggere, aggiornare e organizzare file e cartelle, nonché per caricare e gestire configurazioni in modo efficiente.
 
-## Installazione
+**VisionPiWoods**, il progetto a cui PyWoodsUtils è principalmente dedicato, è un sistema in fase di sviluppo che offre diverse funzionalità per la gestione di una fotocamera Raspberry Pi:
 
-E' necessario installare il codice sorgente disponibile su GitHub, puoi seguire questi passaggi:
+* **Streaming video:** Trasmissione video in tempo reale tramite l'interfaccia web FastAPI.
+* **Registrazione video in base al movimento:** Avvio automatico della registrazione video in presenza di movimento rilevato dalla fotocamera.
+* **Cattura di screenshot:** Acquisizione di screenshot on-demand o automatizzata.
 
-Scarica il codice sorgente dal repository GitHub qui.
+PyWoodsUtils fornisce moduli utili per la gestione di file, configurazioni e altre attività comuni all'interno del progetto VisionPiWoods, semplificando lo sviluppo e l'utilizzo del sistema.
 
-Estrai l'archivio scaricato nella posizione desiderata sul tuo computer.
+### Moduli Inclusi
 
-Naviga nella directory estratta nel tuo terminale:
+* **PyWoods_Files:**
+    - Gestisce file e cartelle in modo robusto e flessibile.
+    - Crea, elimina, rinomina e sposta file e cartelle con facilità.
+    - Recupera elenchi di file filtrati in base a criteri specifici (estensione, ricerca ricorsiva, inclusione nomi directory).
+    - Mantiene la struttura delle directory e gestisce percorsi relativi e assoluti.
+    - Fornisce funzionalità avanzate per la creazione di cartelle, verifica dei permessi, recupero di elenchi di file con filtri avanzati e gestione dei percorsi relativi e assoluti.
+
+* **PyWoods_Config:**
+    - Gestisce le configurazioni per le tue applicazioni in modo semplice ed efficiente.
+    - Carica e valida le configurazioni da file JSON utilizzando modelli Pydantic.
+    - Offre un'interfaccia intuitiva per accedere e modificare le impostazioni di configurazione.
+
+### Installazione
 
 ```bash
-cd PERCORSO_ALLA_DIRECTORY_ESTRAZIONE
+pip install pywoodsutils
 ```
 
-Installa la libreria usando il seguente comando:
+Una volta installato, puoi importare e utilizzare i moduli `PyWoods_Files` e `PyWoods_Config` nei tuoi progetti Python.
 
-```bash
-python setup.py install
-```
+### Documentazione
 
-Dopo aver eseguito il comando di installazione, la libreria verrà installata nel tuo ambiente Python.
+Ogni modulo PyWoodsUtils include una documentazione completa che descrive le sue funzionalità, l'utilizzo e gli esempi. Puoi accedere alla documentazione direttamente dai commenti all'interno del codice sorgente o utilizzando strumenti di documentazione come Sphinx.
 
-## Utilizzo
+### Contribuire
 
-Ecco un esempio di come utilizzare la libreria:
+PyWoodsUtils è un progetto open-source e le tue contribuzioni sono le benvenute! Se hai idee per migliorare i moduli esistenti o desideri aggiungere nuove funzionalità, apri un ticket su GitHub o invia una pull request con le tue modifiche.
+
+### Licenza
+
+PyWoodsUtils è distribuito sotto la licenza MIT. Vedere il file [LICENSE](LICENSE) per ulteriori informazioni.
+
+### Esempio di Utilizzo (PyWoods_Files)
 
 ```python
-from PyWoods_Config import ConfigManager
+from pywoodsutils.files import FileManager
 
-# Carica le configurazioni
-config = ConfigManager.load_configs()
+# Crea un'istanza del gestore file
+file_manager = FileManager("/path/to/your/root/directory")
+
+# Recupera un elenco di file con estensione ".jpg"
+image_files = file_manager.get_files_by_extension("/images", extension=".jpg")
+
+# Recupera un elenco di file ricorsivamente (incluse sottodirectory)
+all_files_recursive = file_manager.get_files_recursively("/documents", recursive=True)
+
+# Recupera percorsi file con nomi directory
+file_paths = file_manager.get_file_paths_with_dir("/documents", include_dir=True)
+```
+
+### Esempio di Utilizzo (PyWoods_Config)
+
+```python
+from pywoodsutils.config import ConfigManager
+
+# Carica le configurazioni dal file "config.json"
+config = ConfigManager.load_configs("config.json")
 
 # Accedi alla configurazione desiderata
 desired_config = config.DesiredConfig
 
-# Stampa un dettaglio della configurazione
-print("Dettaglio della configurazione:", desired_config.detail)
+# Stampa un valore specifico dalla configurazione
+print("Valore di 'my_key':", desired_config.my_key)
 ```
 
+### Struttura del Progetto
+
+La struttura del progetto è
 ## Struttura del Progetto
 
-La struttura del progetto è organizzata nel seguente modo:
+PyWoodsUtils è suddiviso in due moduli principali:
 
-- `PyWoods_Config/`: Directory principale della libreria.
-  - `__init__.py`: File di inizializzazione del package.
-  - `config_manager.py`: Modulo principale per la gestione delle configurazioni.
-  - `json_configs/`: Directory contenente i file JSON di configurazione.
-    - `desired.json`: Esempio di file JSON di configurazione per una applicazione.
-  - `models/`: Directory contenente i modelli Pydantic.
-    - `__init__.py`: File di inizializzazione del package.
-    - `desired_model.py`: Modulo contenente la definizione del modello per la configurazione desiderata.
-- `tests/`: Directory contenente i file di test per la libreria.
-  - `__init__.py`: File di inizializzazione del package.
-  - `test_config_manager.py`: File di test per il modulo `config_manager.py`.
-  - `test_desired_model.py`: File di test per il modulo `desired_model.py`.
-- `pyproject.toml`: File di configurazione per il progetto Python.
-- `README.md`: Questo file, contenente informazioni dettagliate sulla libreria e le istruzioni per l'utilizzo.
-- `setup.cfg`: File di configurazione per il pacchetto Python.
+**1. PyWoods_Files:**
 
-## Contribuire
+- Fornisce funzionalità robuste per la gestione di file e cartelle.
+- Include funzioni per:
+    - Creare, eliminare, rinominare e spostare file e cartelle.
+    - Recuperare elenchi di file filtrati per estensione, ricerca ricorsiva e inclusione nomi directory.
+    - Mantenere la struttura delle directory e gestire percorsi relativi e assoluti.
+    - Offrire funzionalità avanzate per la creazione di cartelle, verifica dei permessi, recupero di elenchi di file con filtri avanzati e gestione dei percorsi relativi e assoluti.
 
-Le pull request sono le benvenute! Per le modifiche importanti, aprire prima un ticket per discutere delle modifiche proposte.
+**2. PyWoods_Config:**
 
-## Licenza
+- Gestisce le configurazioni per le applicazioni in modo semplice ed efficiente.
+- Offre funzionalità per:
+    - Caricare e validare le configurazioni da file JSON utilizzando modelli Pydantic.
+    - Fornire un'interfaccia intuitiva per accedere e modificare le impostazioni di configurazione.
 
-Questo progetto è distribuito sotto la licenza MIT. Vedere il file [LICENSE](LICENSE) per ulteriori informazioni.
+**Struttura del repository:**
 
----
+```
+pywoodsutils
+├── LICENSE
+├── README.md
+├── pywoods_config
+│   ├── __init__.py
+│   ├── config.py
+│   └── config_manager.py
+├── pywoods_files
+│   ├── __init__.py
+│   ├── file_manager.py
+│   └── files.py
+├── tests
+│   ├── test_config.py
+│   └── test_files.py
+└── tox.ini
+```
 
-Questo README fornisce una panoramica completa della libreria PyWoods_Config, spiegando come installarla, utilizzarla e contribuire ad essa. Può essere ulteriormente personalizzato per adattarsi alle esigenze specifiche del progetto.
+**Ogni modulo include una documentazione completa che descrive le sue funzionalità, l'utilizzo e gli esempi.**
+
+**Scarica il pacchetto:**
+
+- **Repository Git:** [https://github.com/PythonWoods/PyWoodsUtils.git](https://github.com/PythonWoods/PyWoodsUtils.git)
