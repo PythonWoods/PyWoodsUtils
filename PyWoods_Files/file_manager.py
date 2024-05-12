@@ -17,15 +17,13 @@ class FileManager:
     * **File and Directory Operations:**
         - `create_folder(path)`: Creates a new directory at the specified path relative to the root path.
         - `checkPathPermissions(path)`: Verifies and potentially corrects permissions for the specified path (file or directory) relative to the root path.
+        - `create_file(file_path, sub_folder=None)`: Creates empty files at the specified paths, optionally within a subfolder relative to the root path.
     * **File Information Retrieval:**
-        - `get_file_list(directory: str, extension=None, recursive=False, include_dir=False) -> list:`
-            Retrieves a list of files within a directory (relative to the root path), optionally filtered by extension, searched recursively within subdirectories, or including directory names in the results.
-        - `get_files_by_extension(self, directory: str, extension: str = None) -> list:`
-            Retrieves a list of files within a directory, optionally filtered by a specific extension (e.g., 'jpg', 'txt').
-        - `get_files_recursively(self, directory: str, recursive: bool = False) -> list:`
-            Retrieves a list of files within a directory, searching recursively within subdirectories if specified.
-        - `get_file_paths_with_dir(self, directory: str, include_dir: bool = False) -> list:`
-            Retrieves a list of files within a directory, optionally including directory names in the paths.
+        - `get_file_list(directory: str, extension=None, recursive=False, include_dir=False) -> list:` Retrieves a list of files within a directory (relative to the root path), optionally filtered by extension, searched recursively within subdirectories, or including directory names in the results.
+        - `get_files_by_extension(self, directory: str, extension: str = None) -> list:` Retrieves a list of files within a directory, optionally filtered by a specific extension (e.g., 'jpg', 'txt').
+        - `get_files_recursively(self, directory: str, recursive: bool = False) -> list:` Retrieves a list of files within a directory, searching recursively within subdirectories if specified.
+        - `get_file_paths_with_dir(self, directory: str, include_dir: bool = False) -> list:` Retrieves a list of files within a directory, optionally including directory names in the paths.
+        - `get_permission_string(self, permissions: int) -> str:` Converts numeric permissions to a human-readable string.
 
     By utilizing this class, you can manage file and directory operations within a designated root directory structure in a robust manner.
 
@@ -40,6 +38,9 @@ class FileManager:
     # Check permissions for a file
     file_manager.checkPathPermissions("/important_file.txt")
 
+    # Create an empty file
+    file_manager.create_file("/new_file.txt")
+
     # Retrieve a list of files
     all_files = file_manager.get_file_list("/documents")
 
@@ -51,7 +52,6 @@ class FileManager:
 
     # Get file paths with directory names
     file_paths = file_manager.get_file_paths_with_dir("/documents", include_dir=True)
-    ```
     """
 
     def __init__(self, root_path=None):
@@ -132,7 +132,6 @@ class FileManager:
 
         return normalized_path
     
-    @staticmethod
     async def create_folder(self,
                                 directory_name: str,
                                 overwrite: bool = False,
@@ -183,7 +182,9 @@ class FileManager:
                 if isinstance(subfolders, dict):
                     # Handle nested dictionary for subfolders
                     for subfolder_name, subfolder_structure in subfolders.items():
-                        subfolder_path = os.path.join(full_path, subfolder_name)
+                        subfolder_path = os.path.join(full_path, subfolder_name
+
+)
                         await self.create_folder(directory_name=subfolder_path, overwrite=overwrite, permissions=permissions, subfolders=subfolder_structure)
                 elif isinstance(subfolders, str):
                     # Handle single subfolder as a string
@@ -207,6 +208,46 @@ class FileManager:
             elif isinstance(e, NotADirectoryError):
                 print(f"A file with the same name '{directory_name}' already exists at the specified path.")
 
+    async def create_file(self, file_path: Union[str, List[str]], sub_folder: Optional[str] = None) -> None:
+        """
+        Creates empty files at the specified paths, optionally within a subfolder relative to the root path.
+
+        This method creates empty files at the specified paths relative to the root path of the FileManager object.
+        It can accept a single file path as a string or a list of file paths. Additionally, it can specify a subfolder
+        relative to the root path where the files will be created.
+
+        Args:
+            file_path (Union[str, List[str]]): The path or list of paths to the file(s) to create.
+            sub_folder (Optional[str], optional): The subfolder within the root path where the files will be created.
+                Defaults to None.
+
+        Returns:
+            None
+
+        Raises:
+            OSError: If an error occurs during file creation.
+        """
+
+        # Convert file_path to list if it's not already
+        if not isinstance(file_path, list):
+            file_path = [file_path]
+
+        # Iterate over the list of file paths
+        for path in file_path:
+            # Combine with sub_folder if specified
+            if sub_folder:
+                full_path = os.path.join(self.root_path, sub_folder, path)
+            else:
+                full_path = os.path.join(self.root_path, path)
+
+            try:
+                # Create empty file
+                with open(full_path, "w"):
+                    pass
+                print(f"Created file '{full_path}' successfully.")
+
+            except OSError as e:
+                print(f"Error creating file '{full_path}': {e}")
 
     async def checkPathPermissions(self, directory_path: str, request_permissions: int, resolve: bool = False) -> None:
             """
@@ -305,220 +346,155 @@ class FileManager:
             if not os.path.isdir(full_path):
                 raise NotADirectoryError(f"Path '{directory}' is not a directory.")
 
-            # Iterate through directory entries using os.scandir
-            for entry in os.scandir(full_path):
-                # Skip hidden files/directories (optional)
-                # if entry.is_hidden():
-                #     continue
-
-                full_entry_path = os.path.join(full_path, entry.name)
-
-                if entry.is_file():
-                    if extension is None or full_entry_path.endswith("." + extension):
+            # Walk through directory tree
+            for root, dirs, files in os.walk(full_path):
+                for file in files:
+                    if extension is None or file.endswith(f".{extension}"):
                         if include_dir:
-                            file_list.append(os.path.relpath(full_entry_path, directory))
+                            file_list.append(os.path.join(root, file))
                         else:
-                            file_list.append(entry.name)
+                            file_list.append(file)
 
-                elif recursive and entry.is_dir():
-                    sub_file_list = self.get_file_list(full_entry_path, extension, recursive, include_dir)
-                    if include_dir:
-                        for sub_file in sub_file_list:
-                            file_list.append(os.path.join(entry.name, sub_file))
-                    else:
-                        file_list.extend(sub_file_list)
+                # If not recursive, break the loop after the first iteration
+                if not recursive:
+                    break
 
         except (FileNotFoundError, NotADirectoryError) as e:
-            print(f"Error accessing directory '{directory}': {e}")
+            # Handle specific errors
+            print(f"Error: '{e}'")
+            raise e
 
         return file_list
-    
+
     def get_files_by_extension(self, directory: str, extension: str = None) -> list:
         """
-        Retrieves a list of files within a directory, optionally filtered by extension.
+        Retrieves a list of files within a directory, optionally filtered by a specific extension.
 
-        This method searches for files in the specified directory, optionally applying
-        a filter based on the provided extension (e.g., 'jpg', 'txt').
+        This method retrieves a list of files within the specified directory, optionally
+        filtered by a specific file extension (e.g., 'jpg', 'txt').
 
         Args:
             directory (str): The path to the directory to search for files.
-            extension (str, optional): The file extension to filter by.
-                Defaults to None (all files included).
+            extension (str, optional): The file extension to filter by (e.g., 'jpg', 'txt').
+                If None, all files are included. Defaults to None.
 
         Returns:
             list: A list of strings representing the full paths or file names of the found files.
-
-        Raises:
-            FileNotFoundError: If the specified directory does not exist.
-            NotADirectoryError: If the specified path is not a directory.
         """
+        return self.get_file_list(directory=directory, extension=extension)
 
-        full_path = os.path.join(self.root_path, directory)
-        file_list = []
-
-        try:
-            # Validate directory existence and type
-            if not os.path.exists(full_path):
-                raise FileNotFoundError(f"Directory '{directory}' does not exist.")
-            if not os.path.isdir(full_path):
-                raise NotADirectoryError(f"Path '{directory}' is not a directory.")
-
-            # Iterate through directory entries using os.scandir
-            for entry in os.scandir(full_path):
-                # Skip hidden files/directories (optional)
-                # if entry.is_hidden():
-                #     continue
-
-                full_entry_path = os.path.join(full_path, entry.name)
-
-                if entry.is_file():
-                    if extension is None or full_entry_path.endswith("." + extension):
-                        file_list.append(full_entry_path)  # Append full path
-
-        except (FileNotFoundError, NotADirectoryError) as e:
-            print(f"Error accessing directory '{directory}': {e}")
-
-        return file_list
-    
     def get_files_recursively(self, directory: str, recursive: bool = False) -> list:
         """
-        Retrieves a list of files within a directory, searching recursively if specified.
+        Retrieves a list of files within a directory, optionally searching recursively within subdirectories.
 
-        This method searches for files in the specified directory and, if the
-        `recursive` parameter is True, also searches within subdirectories.
+        This method retrieves a list of files within the specified directory, optionally
+        performing a recursive search within subdirectories.
 
         Args:
             directory (str): The path to the directory to search for files.
-            recursive (bool, optional): If True, searches for files recursively
-                within subdirectories. Defaults to False.
+            recursive (bool, optional): If True, searches for files recursively within
+                subdirectories. Defaults to False.
 
         Returns:
             list: A list of strings representing the full paths or file names of the found files.
-
-        Raises:
-            FileNotFoundError: If the specified directory does not exist.
-            NotADirectoryError: If the specified path is not a directory.
         """
-
-        full_path = os.path.join(self.root_path, directory)
-        file_list = []
-
-        try:
-            # Validate directory existence and type
-            if not os.path.exists(full_path):
-                raise FileNotFoundError(f"Directory '{directory}' does not exist.")
-            if not os.path.isdir(full_path):
-                raise NotADirectoryError(f"Path '{directory}' is not a directory.")
-
-            # Iterate through directory entries using os.scandir
-            for entry in os.scandir(full_path):
-                # Skip hidden files/directories (optional)
-                # if entry.is_hidden():
-                #     continue
-
-                full_entry_path = os.path.join(full_path, entry.name)
-
-                if entry.is_file():
-                    file_list.append(full_entry_path)  # Append full path
-
-                elif recursive and entry.is_dir():
-                    # Recursive call for subdirectories
-                    sub_files = self.get_files_recursively(full_entry_path, recursive)
-                    file_list.extend(sub_files)
-
-        except (FileNotFoundError, NotADirectoryError) as e:
-            print(f"Error accessing directory '{directory}': {e}")
-
-        return file_list
+        return self.get_file_list(directory=directory, recursive=recursive)
 
     def get_file_paths_with_dir(self, directory: str, include_dir: bool = False) -> list:
         """
-        Retrieves a list of files within a directory, optionally including directory names.
+        Retrieves a list of files within a directory, optionally including directory names in the paths.
 
-        This method searches for files in the specified directory and, if the
-        `include_dir` parameter is True, prepends the directory name to the file names
-        in the returned list.
+        This method retrieves a list of files within the specified directory, optionally
+        including directory names in the file paths.
 
         Args:
             directory (str): The path to the directory to search for files.
-            include_dir (bool, optional): If True, includes the directory name in the
-                file paths. Defaults to False.
+            include_dir (bool, optional): If True, includes the directory name in the file paths.
+                Defaults to False.
 
         Returns:
-            list: A list of strings representing the file paths or file names of the found files.
-
-        Raises:
-            FileNotFoundError: If the specified directory does not exist.
-            NotADirectoryError: If the specified path is not a directory.
+            list: A list of strings representing the full paths or file names of the found files.
         """
-
-        full_path = os.path.join(self.root_path, directory)
-        file_list = []
-
-        try:
-            # Validate directory existence and type
-            if not os.path.exists(full_path):
-                raise FileNotFoundError(f"Directory '{directory}' does not exist.")
-            if not os.path.isdir(full_path):
-                raise NotADirectoryError(f"Path '{directory}' is not a directory.")
-
-            # Iterate through directory entries using os.scandir
-            for entry in os.scandir(full_path):
-                # Skip hidden files/directories (optional)
-                # if entry.is_hidden():
-                #     continue
-
-                full_entry_path = os.path.join(full_path, entry.name)
-
-                if entry.is_file():
-                    if include_dir:
-                        # Prepend directory name if requested
-                        file_list.append(os.path.relpath(full_entry_path, directory))
-                    else:
-                        file_list.append(entry.name)  # Append filename only
-
-        except (FileNotFoundError, NotADirectoryError) as e:
-            print(f"Error accessing directory '{directory}': {e}")
-
-        return file_list
-
-
+        return self.get_file_list(directory=directory, include_dir=include_dir)
 
     def get_permission_string(self, permissions: int) -> str:
         """
         Converts numeric permissions to a human-readable string.
 
-        This method takes numeric permissions (e.g., 0o755) and converts them
-        into a string representation like "rwxr-xr-x" for user, group, and others.
+        This method converts numeric permissions (e.g., 0o755) to a human-readable string
+        format (e.g., 'rwxr-xr-x').
 
         Args:
-            permissions (int): The numeric permissions to convert.
+            permissions (int): The numeric representation of permissions.
 
         Returns:
-            str: The human-readable string representation of the permissions.
+            str: A human-readable string representing the permissions.
         """
 
-        permission_string = ""
+        permission_str = ''
+        permission_str += 'r' if permissions & 0o400 else '-'
+        permission_str += 'w' if permissions & 0o200 else '-'
+        permission_str += 'x' if permissions & 0o100 else '-'
+        permission_str += 'r' if permissions & 0o40 else '-'
+        permission_str += 'w' if permissions & 0o20 else '-'
+        permission_str += 'x' if permissions & 0o10 else '-'
+        permission_str += 'r' if permissions & 0o4 else '-'
+        permission_str += 'w' if permissions & 0o2 else '-'
+        permission_str += 'x' if permissions & 0o1 else '-'
 
-        # Extract permission bits for user, group, and others
-        user_perms = (permissions & 0o700) >> 6
-        group_perms = (permissions & 0o070) >> 3
-        other_perms = permissions & 0o007
+        return permission_str
 
-        # Convert permission bits to characters (rwx-)
-        permission_chars = {
-            0: "-",
-            1: "--x",
-            2: "-w-",
-            3: "-wx",
-            4: "r-",
-            5: "r-x",
-            6: "rw-",
-            7: "rwx"
-        }
 
-        permission_string += permission_chars[user_perms]
-        permission_string += permission_chars[group_perms]
-        permission_string += permission_chars[other_perms]
+# Example Usage:
 
-        return permission_string
+if __name__ == '__main__':
+    import os
+    import asyncio
+
+    async def main(root_path):
+        # Initialize FileManager with a root directory
+        
+        fm = FileManager(root_path=root_path)
+
+        # Create a folder with subfolders
+        await fm.create_folder(
+            directory_name="VPW_Test_Dir",
+            overwrite=True,
+            permissions=0o755,
+            subfolders={
+                "VPW_sub1": ["VPW_sub1.1", "VPW_sub1.2"],
+                "VPW_sub1": ["VPW_sub2.1", "VPW_sub2.2"],
+                "VPW_sub2": None,
+                "VPW_sub3": None,  # No subfolders
+                "VPW_sub4": {
+                    "VPW_sub4.1":["VPW_sub4.1.1", "VPW_sub4.1.2"],
+                }
+                
+                
+            }
+        )
+
+        # Create an empty file
+        await fm.create_file(file_path="VPW_Test_Dir/VPW_sub1/test.env")
+        await fm.create_file(file_path="VPW_Test_Dir/VPW_sub1/test.toml")
+        await fm.create_file(file_path="VPW_Test_Dir/VPW_sub1/test.json")
+        await fm.create_file(sub_folder="VPW_Test_Dir/VPW_sub2", file_path=["test.doc", "test.xlsx","test.pdf"])
+
+        # Get a list of files with specific extensions
+        file_list = fm.get_files_by_extension(directory="VPW_Test_Dir/VPW_sub1", extension="txt")
+        print("Files with extension 'txt':", file_list)
+
+        # Get a list of all files recursively
+        all_files = fm.get_files_recursively(directory="VPW_Test_Dir/VPW_sub1", recursive=True)
+        print("All files recursively:", all_files)
+
+        # Get a list of file paths with directory names included
+        file_paths_with_dir = fm.get_file_paths_with_dir(directory="VPW_Test_Dir/VPW_sub1", include_dir=True)
+        print("File paths with directory names:", file_paths_with_dir)
+
+        # Check and correct permissions of directories
+        await fm.checkPathPermissions(directory_path="new_folder", request_permissions=0o755, resolve=False)
+
+    # Run the main coroutine
+    root_path = os.path.join(os.getcwd(), "VisionPywods - TestFolder")
+    asyncio.run(main(root_path))
