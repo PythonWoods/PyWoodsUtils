@@ -1,7 +1,3 @@
-Certo, ecco una versione modificata del tuo file README.MD che rimuove i riferimenti specifici all'intelligenza artificiale e parla in modo più generico di applicazioni:
-
----
-
 # PyWoods_Config
 
 PyWoods_Config è una libreria Python per la gestione delle configurazioni per varie applicazioni.
